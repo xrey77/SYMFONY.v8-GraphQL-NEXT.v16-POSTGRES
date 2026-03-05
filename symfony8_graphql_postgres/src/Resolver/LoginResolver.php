@@ -31,7 +31,6 @@ final class LoginResolver implements MutationResolverInterface
             }
             $token = $this->jwtManager->create($user);
             $user->setToken($token);
-            // echo $user;
             $user->setMessage('You have logged-in successfully, please wait.');
             return new LoginPayload(
                     (string) $user->getId(),

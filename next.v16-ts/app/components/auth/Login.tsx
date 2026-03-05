@@ -59,8 +59,9 @@ export default function Login() {
       if (data?.loginUser.user) {
         setLoginMessage(data.loginUser.user.message);
         if (data.loginUser.user.qrcodeurl) {
-            const idno = parseInt(data.loginUser.user.id, 10);           
-            window.sessionStorage.setItem('USERID', idno.toString());
+            let xid: string = data.loginUser.user.id;
+            const idno = xid.split('/').pop();
+            window.sessionStorage.setItem('USERID', idno);
             window.sessionStorage.setItem('ROLES',data.loginUser.user.roles[0]);
             window.sessionStorage.setItem('TOKEN',data.loginUser.user.token);
             let userpic: string = `https://127.0.0.1:8000/users/${data.loginUser.user.userpic}`;
@@ -70,8 +71,9 @@ export default function Login() {
 
         } else {
 
-          const idno = parseInt(data.loginUser.user.id, 10);           
-          window.sessionStorage.setItem('USERID', idno.toString());
+          let xid: string = data.loginUser.user.id;
+          const idno = xid.split('/').pop();
+          window.sessionStorage.setItem('USERID', idno);
           window.sessionStorage.setItem('USERNAME',data.loginUser.user.username);
           window.sessionStorage.setItem('TOKEN',data.loginUser.user.token);                        
           window.sessionStorage.setItem('ROLES',data.loginUser.user.roles[0]);

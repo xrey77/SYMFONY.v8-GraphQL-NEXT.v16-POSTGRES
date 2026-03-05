@@ -245,8 +245,22 @@ a {
 .user {
   width: 40px;
   height: 40px;
+  color: 'white' !important;
   margin-left: -100% !important;
   border-radius: 50%;
+}
+
+.user1 {
+  width: 240px;
+  height: 40px;
+  color: 'white' !important;
+  margin-left: -10px !important;
+  border-radius: 50%;
+}
+
+.user2 {
+  width: 40px;
+  height: 40px;
 }
 
 .user-pix-box {

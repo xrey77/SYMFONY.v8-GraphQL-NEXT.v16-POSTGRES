@@ -1,6 +1,6 @@
 type Query {
   node(id: ID!): Node
-  user(id: ID!): User
+  user(id: ID!, extraParam: String): User
   users(
     "Returns the first n elements from the list."
     first: Int
@@ -42,6 +42,7 @@ type User implements Node {
   updatedAt: String!
   totpSecret: String
   token: String!
+  message: String!
   userIdentifier: String!
   totpAuthenticationUsername: String!
 }
@@ -76,6 +77,21 @@ type Mutation {
 
   "Logins a User."
   loginUser(input: loginUserInput!): loginUserPayload
+
+  "UpdateProfiles a User."
+  updateProfileUser(input: updateProfileUserInput!): updateProfileUserPayload
+
+  "UpdatePasswords a User."
+  updatePasswordUser(input: updatePasswordUserInput!): updatePasswordUserPayload
+
+  "ActivateMfas a User."
+  activateMfaUser(input: activateMfaUserInput!): activateMfaUserPayload
+
+  "VerifyOtps a User."
+  verifyOtpUser(input: verifyOtpUserInput!): verifyOtpUserPayload
+
+  "UploadPictures a User."
+  uploadPictureUser(input: uploadPictureUserInput!): uploadPictureUserPayload
 }
 
 "Creates a User."
@@ -91,13 +107,8 @@ input createUserInput {
 
 "Creates a User."
 type createUserPayload {
-  user: createUserPayloadData
+  user: User
   clientMutationId: String
-}
-
-"Creates a User."
-type createUserPayloadData implements Node {
-  id: ID!
 }
 
 "Logins a User."
@@ -109,12 +120,82 @@ input loginUserInput {
 
 "Logins a User."
 type loginUserPayload {
-  user: loginUserPayloadData
+  user: User
   clientMutationId: String
 }
 
-"Logins a User."
-type loginUserPayloadData implements Node {
+"UpdateProfiles a User."
+input updateProfileUserInput {
   id: ID!
+  extraParam: String
+  firstname: String!
+  lastname: String!
+  mobile: String!
+  clientMutationId: String
+}
+
+"UpdateProfiles a User."
+type updateProfileUserPayload {
+  user: User
+  clientMutationId: String
+}
+
+"UpdatePasswords a User."
+input updatePasswordUserInput {
+  id: ID!
+  extraParam: String
+  password: String!
+  clientMutationId: String
+}
+
+"UpdatePasswords a User."
+type updatePasswordUserPayload {
+  user: User
+  clientMutationId: String
+}
+
+"ActivateMfas a User."
+input activateMfaUserInput {
+  id: ID!
+  extraParam: String
+  twofactorenabled: Boolean!
+  clientMutationId: String
+}
+
+"ActivateMfas a User."
+type activateMfaUserPayload {
+  user: User
+  clientMutationId: String
+}
+
+"VerifyOtps a User."
+input verifyOtpUserInput {
+  id: ID!
+  extraParam: String
+  otp: String!
+  clientMutationId: String
+}
+
+"VerifyOtps a User."
+type verifyOtpUserPayload {
+  user: User
+  clientMutationId: String
+}
+
+"UploadPictures a User."
+input uploadPictureUserInput {
+  id: ID!
+  extraParam: String
+  userpic: Upload
+  clientMutationId: String
+}
+
+"The `Upload` type represents a file to be uploaded in the same HTTP request as specified by [graphql-multipart-request-spec](https://github.com/jaydenseric/graphql-multipart-request-spec)."
+scalar Upload
+
+"UploadPictures a User."
+type uploadPictureUserPayload {
+  user: User
+  clientMutationId: String
 }
 

@@ -1,18 +1,19 @@
 'use client'
 import React, { useState } from "react"
-import axios from 'axios';
+import { client } from '@/lib/ApolloClient';
+import { gql } from '@apollo/client'
 
-const api = axios.create({
-  baseURL: "https://localhost:7292",
-  headers: {'Accept': 'application/json',
-            'Content-Type': 'application/json'}
-})
-
-interface Mfadata {
-  username: string,
-  statuscode: number,
-  message: string  
-}
+const VERIFY_OTP = gql`
+  mutation verifyOtp($id: ID!, $otp: String!) {
+    verifyOtpUser(input: {id: $id, otp: $otp})  {
+      user {
+        id
+        username
+        message
+      }
+    }
+  }
+  `
 
 export default function Mfa() {
     const [otpcode, setOtpcode] = useState<string>('');
@@ -24,31 +25,67 @@ export default function Mfa() {
         window.location.href="/";
     }
 
-    const submitMFA = (e: React.FormEvent<HTMLFormElement>) => {
+    const submitMFA = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();         
         setDizable(true);
         const idno = window.sessionStorage.getItem('USERID')?.toString();
-        const data =JSON.stringify({ id: idno, otp: otpcode });
-        api.post<Mfadata>("/validateotp", data)
-        .then((res) => {
-            const data: Mfadata = res.data;
-                setMessage(data.message);
+        const token = window.sessionStorage.getItem('TOKEN')?.toString();
+
+        try {
+
+            const { data } = await client.mutate({
+            mutation: VERIFY_OTP,
+            variables: { 
+                id: idno,
+                otp: otpcode
+            },
+            context: {
+            headers: {
+                authorization: `Bearer ${token}`,
+            },
+            },          
+            });
+            if (data?.verifyOtpUser) {
+                setMessage(data.verifyOtpUser.user.message);
+                sessionStorage.setItem("USERNAME", data.verifyOtpUser.user.username);
+                setTimeout(() => { 
+                    setMessage(''); 
+                    window.location.reload();
+                    setDizable(false);
+                }, 3000);
+            }
+        } catch (err: any) {
+            setMessage(err.message);
+            setTimeout(() => { 
+                setDizable(false);
+                setMessage('');
                 setOtpcode('');
-                sessionStorage.setItem("USERNAME", data.username);
-                window.setTimeout(() => {
-                  setMessage('');
-                  window.location.reload();
-                  setDizable(false);
-                }, 3000);
-          }, (error) => {
-               setMessage(error.response.data.message);
-                window.setTimeout(() => {
-                  setDizable(false);
-                  setMessage('');
-                  setOtpcode('');
-                }, 3000);
-                return;
-        });    
+            }, 3000);
+        }
+
+
+
+        // const data =JSON.stringify({ id: idno, otp: otpcode });
+        // api.post<Mfadata>("/validateotp", data)
+        // .then((res) => {
+        //     const data: Mfadata = res.data;
+        //         setMessage(data.message);
+        //         setOtpcode('');
+        //         sessionStorage.setItem("USERNAME", data.username);
+        //         window.setTimeout(() => {
+        //           setMessage('');
+        //           window.location.reload();
+        //           setDizable(false);
+        //         }, 3000);
+        //   }, (error) => {
+        //        setMessage(error.response.data.message);
+        //         window.setTimeout(() => {
+        //           setDizable(false);
+        //           setMessage('');
+        //           setOtpcode('');
+        //         }, 3000);
+        //         return;
+        // });    
     }
 
 

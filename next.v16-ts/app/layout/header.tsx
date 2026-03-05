@@ -101,7 +101,7 @@ export default function Header({}) {
                 <Link className="nav-link dropdown-toggle text-white active" href={""} role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   {
                       profilepic !== null ?
-                          <Image src={profilepic} id="userpic1" fill={true} className='user ' alt={'userpicture'} />
+                          <Image src={profilepic} id="userpic1" fill={true} className='user' alt={'userpicture'} />
                       : null
                   }
                   <span className='text-white'>{username}</span>
@@ -176,37 +176,49 @@ export default function Header({}) {
               <Link className="nav-link text-white" aria-current="page" href={"/contactus"}>&nbsp;Contact Us</Link>
             </li>
             <li className="nav-item"><hr/></li>
-
             </ul>
             
             { 
               username !== '' ? (
-                <ul className="navbar-nav mr-auto">              
+                <ul className="nav">  
                   <li className="nav-item dropdown">
-                    <Link className="nav-link dropdown-toggle active" href={"/#"} role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    {
-                        profilepic !== null ?
-                            <Image width={30} height={30} src={profilepic} id="userpic1" className='user' alt='' />
-                        : null
-                    }
-                    {username}
+                    <Link className="nav-link dropdown-toggle" href={"/#"} role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <div className='user1'><img className="user2" src={profilepic} alt=""/>&nbsp;<span className="text-white"> {username}</span></div>
                     </Link>
                     <ul className="dropdown-menu">
                       <li data-bs-dismiss="offcanvas">
-                        <Link onClick={logout} className="dropdown-item" href={"/#"}>LogOut</Link>
-                      </li>
-                      <li className="nav-item"><hr/></li>
+                        <Link onClick={logout} className="dropdown-item" href={"/#"}>Logout</Link></li>
                       <li data-bs-dismiss="offcanvas">
-                        <Link className="dropdown-item" href={"/profile"}>Profile</Link> 
-                      </li>
+                        <Link className="dropdown-item" href={"/profile"}>Profile</Link></li>
                       <li><hr className="dropdown-divider"/></li>
                       <li data-bs-dismiss="offcanvas">
-                        <Link className="dropdown-item" href={"/#"}>Messenger</Link>
-                      </li>
+                        <Link className="dropdown-item" href={"/#"}>Messenger</Link></li>
                     </ul>
-                  </li>          
-                  <li className="nav-item"><hr/></li>                                        
-                </ul>                    
+                  </li>
+                </ul>           
+
+                // <ul className="navbar-nav mr-auto">
+                //   <li className="nav-item dropdown">
+                //     <Link className="nav-link dropdown-toggle text-white" href={"/#"} role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                //       <Image width={30} height={30} src={profilepic}  className='user' alt='' />
+                //       <span className='text-white'>{username}</span>
+                //     </Link>
+                //     <ul className="dropdown-menu">
+                //       <li data-bs-dismiss="offcanvas">
+                //         <Link onClick={logout} className="dropdown-item" href={"/#"}>LogOut</Link>
+                //       </li>
+                //       <li className="nav-item"><hr/></li>
+                //       <li data-bs-dismiss="offcanvas">
+                //         <Link className="dropdown-item" href={"/profile"}>Profile</Link> 
+                //       </li>
+                //       <li><hr className="dropdown-divider"/></li>
+                //       <li data-bs-dismiss="offcanvas">
+                //         <Link className="dropdown-item" href={"/#"}>Messenger</Link>
+                //       </li>
+                //     </ul>
+                //   </li>          
+                //   <li className="nav-item"><hr/></li>                                        
+                // </ul>                    
               ) : (
                   <ul className="nav flex-column">
                     <li className="nav-item" data-bs-dismiss="offcanvas">

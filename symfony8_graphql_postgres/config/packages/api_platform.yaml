@@ -1,4 +1,9 @@
 api_platform:
+    title: GraphQL API Platform
+    version: 1.0.0
+    formats:
+        jsonld: ['application/ld+json']
+        multipart: ['multipart/form-data']
     graphql:
         enabled: true
         graphiql:

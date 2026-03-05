@@ -4,7 +4,7 @@ namespace App\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Entity\User;
-use App\Dto\UserResponse;
+use App\Dto\CreatePayload;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -19,10 +19,16 @@ final class CreateUserResolver implements MutationResolverInterface
      * @param User|null $item The deserialized user from the input
      */
  
-public function __invoke($item, array $context): UserResponse
+public function __invoke($item, array $context): CreatePayload
 {
     if (!$item instanceof User) {
         throw new \RuntimeException('Expected User entity.');
+    }
+
+    $plainPassword = $item->getPassword() ?? $context['args']['input']['password'] ?? null;
+
+    if (!$plainPassword) {
+        throw new \InvalidArgumentException('Password is required.');
     }
 
     $hashedPassword = $this->passwordHasher->hashPassword($item, $item->getPassword());
@@ -31,15 +37,17 @@ public function __invoke($item, array $context): UserResponse
     $this->entityManager->persist($item);
     $this->entityManager->flush();
 
-
-    // Ensure the order matches your DTO constructor: (string $message, User $user)
-    return new UserResponse($item,'You have registered successfully, please login now.');
-}
-
+    $item->setMessage('You have registered successfully, please login now.');
+    return new CreatePayload(
+        (string) $item->getId(),
+        $item->getMessage(),
+        $item
+    );    
+ }
 }
 
 // =============REQUEST=================
-// mutation CreateUser(
+// mutation create(
 //     $firstname: String!,
 //     $lastname: String!,
 //     $email: String!,
@@ -57,11 +65,14 @@ public function __invoke($item, array $context): UserResponse
 //         password: $password        
 //         }
 //      ) {
-//             user{
-//                 id
-//             }
+//           user{
+//               id
+//               message
+//           }
+//     			clientMutationId
 //     }
 // }
+
 
 // ===============VARIABLES================
 // {

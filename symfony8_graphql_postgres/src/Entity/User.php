@@ -16,26 +16,46 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
 use Scheb\TwoFactorBundle\Model\Totp\TotpConfigurationInterface;
-use App\Dto\UserResponse;
+use App\Dto\CreatePayload;
 use App\Resolver\CreateUserResolver;
 use App\Resolver\LoginResolver;
+use App\Resolver\GetUserIdResolver;
+use App\Resolver\UpdateProfileResolver;
+use App\Resolver\UpdatePasswordResolver;
+use App\Resolver\ActivateMfaResolver;
+use App\Resolver\VerifyOtpResolver;
+use App\Resolver\UploadPictureResolver;
 use App\Dto\LoginPayload;
+use App\Dto\UpdateProfileUserPayload;
+use App\Dto\ActivateMfaPayload;
+use App\Dto\VerifyOtpPayload;
+use App\Dto\UploadPicturePayload;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\HasLifecycleCallbacks]
-#[UniqueEntity(fields: ['email'], message: 'Email Address is already taken.')]
-#[UniqueEntity(fields: ['username'], message: 'Username is already taken.')]
+// #[Vich\UploadableField(mapping: 'user_avatar', fileNameProperty: 'userpic')]
+#[UniqueEntity(fields: ['email'], message: 'address is already taken.')]
+#[UniqueEntity(fields: ['username'], message: 'is already taken.')]
+#[Vich\Uploadable]
 #[ApiResource(
-    routePrefix: '/user', 
     graphQlOperations: [
-        new Query(),            // Automatically becomes 'user'
-        new QueryCollection(),  // Automatically becomes 'users'        
+        new Query(
+            name: 'item_query',
+            resolver: GetUserIdResolver::class,
+            args: [
+                'id' => ['type' => 'ID!'],
+                'extraParam' => ['type' => 'String']
+            ],
+            read: false
+        ), 
+        new QueryCollection(),  // Automatically becomes 'users'
         new Mutation(
             name: 'create',
             resolver: CreateUserResolver::class,
-            output: UserResponse::class,
-            normalizationContext: ['groups' => ['user:create','user:read']],
             args: [
                 'firstname' => ['type' => 'String!'],
                 'lastname'  => ['type' => 'String!'],
@@ -44,6 +64,9 @@ use App\Dto\LoginPayload;
                 'username'  => ['type' => 'String!'],
                 'password'  => ['type' => 'String!'],
             ],            
+            output: CreatePayload::class,
+            read: false,
+            serialize: true,
             description: 'Creates a new user with a custom success message'             
         ),
         new Mutation(
@@ -58,7 +81,83 @@ use App\Dto\LoginPayload;
             serialize: true,
             validate: false,
             description: 'User login with a custom success message'
-        )        
+        ),        
+        new Mutation(
+            name: 'updateProfile',
+            resolver: UpdateProfileResolver::class,
+            args: [
+                'id' => ['type' => 'ID!'],
+                'extraParam' => ['type' => 'String'],
+                'firstname' => ['type' => 'String!'],
+                'lastname' => ['type' => 'String!'],
+                'mobile' => ['type' => 'String!'],
+            ],
+            output: UpdateProfileUserPayload::class,
+            read: false,
+            serialize: true,
+            validate: false,
+            description: 'Update User Profile with a custom success message'
+        ),
+        new Mutation(
+            name: 'updatePassword',
+            resolver: UpdatePasswordResolver::class,
+            args: [
+                'id' => ['type' => 'ID!'],
+                'extraParam' => ['type' => 'String'],
+                'password' => ['type' => 'String!'],
+            ],
+            output: UpdateProfileUserPayload::class,
+            read: false,
+            serialize: true,
+            validate: false,
+            description: 'Update Password with a custom success message'
+        ),
+        new Mutation(
+            name: 'activateMfa',
+            resolver: ActivateMfaResolver::class,
+            args: [
+                'id' => ['type' => 'ID!'],
+                'extraParam' => ['type' => 'String'],
+                'twofactorenabled' => ['type' => 'Boolean!'],
+            ],
+            output: ActivateMfaPayload::class,
+            read: false,
+            serialize: true,
+            validate: false,
+            description: 'Activate Multi-Factor Authenticator with a custom success message'
+        ),
+        new Mutation(
+            name: 'verifyOtp',
+            resolver: VerifyOtpResolver::class,
+            args: [
+                'id' => ['type' => 'ID!'],
+                'extraParam' => ['type' => 'String'],
+                'otp' => ['type' => 'String!'],
+            ],
+            output: VerifyOtpPayload::class,
+            read: false,
+            serialize: true,
+            validate: false,
+            description: 'Verify TOTP code with a custom success message'
+        ),
+        new Mutation(
+            name: 'uploadPicture',
+            resolver: UploadPictureResolver::class,
+            args: [
+                'id' => ['type' => 'ID!'],
+                'extraParam' => ['type' => 'String'],
+                'file' => ['type' => 'Upload'],
+            ],
+            output: UploadPicturePayload::class,
+            // operations: [
+            //     new Post(
+            //         inputFormats: ['multipart' => ['multipart/form-data']],
+            //     )
+            // ],    
+            description: 'Upload user profile picture code with a custom success message'
+        ),
+
+
     ]
 )]
 class User implements TwoFactorInterface, UserInterface, PasswordAuthenticatedUserInterface 
@@ -128,6 +227,7 @@ class User implements TwoFactorInterface, UserInterface, PasswordAuthenticatedUs
     #[ApiProperty(readable: true)]
     #[Groups(['user:read'])]
     private ?string $userpic = "pix.png";
+
 
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
@@ -409,29 +509,12 @@ class User implements TwoFactorInterface, UserInterface, PasswordAuthenticatedUs
         $this->message = $message;
         return $this;
     }
+
+   #[Vich\UploadableField(mapping: 'user_avatar', fileNameProperty: 'userpic')]
+    public ?File $file = null;
+
+
 }
-
-
-// ======REQUEST - GET USER BY ID======
-// query User($id: ID!) {
-//   user(id: $id) {
-//     id
-//     firstname
-//     lastname
-//     email
-//     mobile
-//     username
-//     isactivated
-//     isblocked
-//     userpic
-//     qrcodeurl
-//   }
-// }
-
-// ======VARIABLES=========
-// {
-//   "id": "/api/user/users/1"
-// }
 
 
 // ===============REQUEST - RETRIEVE ALL USERS===============
