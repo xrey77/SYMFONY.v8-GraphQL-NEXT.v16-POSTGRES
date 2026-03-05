@@ -7,7 +7,7 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(graphQlOperations: [])]
-final class UploadPicturePayload
+final class UploadPictureUserPayload
 {
     public function __construct(        
 
@@ -16,7 +16,7 @@ final class UploadPicturePayload
         public string $id,
 
         #[Groups(['user:read'])]
-        public ?string $userpic,
+        public string $userpic,
 
         #[Groups(['user:read'])]
         public string $message,

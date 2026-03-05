@@ -186,7 +186,7 @@ type verifyOtpUserPayload {
 input uploadPictureUserInput {
   id: ID!
   extraParam: String
-  userpic: Upload
+  file: Upload
   clientMutationId: String
 }
 

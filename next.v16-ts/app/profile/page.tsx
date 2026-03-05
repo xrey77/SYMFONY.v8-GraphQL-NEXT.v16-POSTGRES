@@ -239,8 +239,6 @@ export default function Profile() {
       });
 
       const map = JSON.stringify({ "0": ["variables.file"] });
-
-
       const formData = new FormData();
       formData.append("operations", operations);
       formData.append("map", map);
@@ -255,17 +253,18 @@ export default function Profile() {
                   }
             });
 
-
-            if (res.data?.errors) {
-              alert("error 1");
-              console.log(res.data.errors[0]);
+            if (res.data.data?.errors) {
+              setMessage(res.data.errors[0].message);
             } else {
-              alert("ok");
+               setMessage(res.data.data.uploadPictureUser.user.message);
+               let pic: string = `https://127.0.0.1:8000/users/${res.data.data.uploadPictureUser.user.userpic}`;
+               setProfilepic(pic);
             }
+            setTimeout(() => setMessage(''), 3000);
+
         } catch (error: any) {
             const errorMsg = error.response?.data?.errors?.[0]?.message || error.message;
             setMessage(errorMsg);
-            alert("error 2");
             setTimeout(() => setMessage(''), 3000);
         }
     }

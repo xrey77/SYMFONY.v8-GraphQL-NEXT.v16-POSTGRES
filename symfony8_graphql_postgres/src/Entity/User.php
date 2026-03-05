@@ -29,7 +29,7 @@ use App\Dto\LoginPayload;
 use App\Dto\UpdateProfileUserPayload;
 use App\Dto\ActivateMfaPayload;
 use App\Dto\VerifyOtpPayload;
-use App\Dto\UploadPicturePayload;
+use App\Dto\UploadPictureUserPayload;
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
@@ -66,7 +66,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
             ],            
             output: CreatePayload::class,
             read: false,
-            serialize: true,
+            serialize: true,            
             description: 'Creates a new user with a custom success message'             
         ),
         new Mutation(
@@ -148,12 +148,11 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
                 'extraParam' => ['type' => 'String'],
                 'file' => ['type' => 'Upload'],
             ],
-            output: UploadPicturePayload::class,
-            // operations: [
-            //     new Post(
-            //         inputFormats: ['multipart' => ['multipart/form-data']],
-            //     )
-            // ],    
+            output: UploadPictureUserPayload::class,
+            read: false,
+            // serialize: true,
+            validate: false,
+            deserialize: false,
             description: 'Upload user profile picture code with a custom success message'
         ),
 
@@ -223,9 +222,9 @@ class User implements TwoFactorInterface, UserInterface, PasswordAuthenticatedUs
     #[Groups(['user:read'])]
     private ?string $qrcodeurl;
 
-    #[ORM\Column(length: 10, options: ["default" => 'pix.png'])]
+    #[ORM\Column(type: 'string', length: 10, options: ["default" => 'pix.png'])]
     #[ApiProperty(readable: true)]
-    #[Groups(['user:read'])]
+    #[Groups(['user:create','user:read'])]
     private ?string $userpic = "pix.png";
 
 
