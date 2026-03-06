@@ -314,3 +314,11 @@ a {
   height: 60vh !important;
   background-size: contain !important;
 }
+
+.h-100 {
+  height: 600px !important;
+}
+
+.pagination {
+  margin-left: 10px !important;
+}

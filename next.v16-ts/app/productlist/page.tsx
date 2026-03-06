@@ -1,61 +1,74 @@
 'use client'
+
 import { useEffect, useState } from 'react'
-import axios from 'axios';
-import Footer from './layout/footer';
+import { client } from '@/lib/ApolloClient';
+import { gql } from '@apollo/client'
 
-const api = axios.create({
-  baseURL: "https://localhost:7292",
-  headers: {'Accept': 'application/json',
-            'Content-Type': 'application/json'}
-})
-
-export type Products = {
-  id: number;
-  descriptions: string;
-  qty: number;
-  unit: string;
-  sellPrice: number;
-  productPicture: string;
-}
-
-export type Productdata = {
-  totpage: number;
-  page: number;
-  products: Products[];
-}
-
+const PRODUCTS_LIST = gql`
+  query listdata($page: Int!) {
+    listdataProducts(page: $page) {  
+        collection {
+          id
+          category
+          descriptions
+          qty
+          unit
+          costprice
+          sellprice
+          saleprice
+          productpicture
+          alertstocks
+          criticalstocks
+        }
+        paginationInfo {
+          currentPage
+          itemsPerPage
+          lastPage
+          totalCount
+        }        
+    }
+  }
+  `
 
 const toDecimal = (number: number) => {
   const formatter = new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2, // Ensures at least two decimal places
-    maximumFractionDigits: 2, // Limits to two decimal places
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
-  // Format the number
   return formatter.format(number);
 };
-
 
 const Productlist = () => {
     const [page, setPage] = useState<number>(1);
     const [totpage, setTotpage] = useState<number>(0);
+    const [totrecords, setTotalrecords] = useState<number>(0);
+
     const [products, setProducts] = useState<any[]>([]);
     const [message, setMessage] = useState<string>('');
 
     const fetchProducts = async (pg: number) => {
-      await api.get<Productdata>(`/api/listproducts/${pg}`)
-      .then((res) => {
-        const jdata: Productdata = res.data;
-        setProducts(jdata.products);
-        setPage(jdata.page);
-        setTotpage(jdata.totpage);
-      }, (error) => {
-          if (error.message === null) {
-            setMessage(error.message);
-            setTimeout(() => {
-              setMessage('');
-            }, 3000);
-          } 
-      });      
+      try {
+
+        const { data } = await client.query({
+          query: PRODUCTS_LIST,
+          variables: { 
+            page: pg,
+          },
+        });
+
+        if (data?.listdataProducts) {
+          setProducts(data.listdataProducts.collection);
+          setPage(data.listdataProducts.paginationInfo.currentPage);
+          setTotpage(data.listdataProducts.paginationInfo.lastPage);
+          setTotalrecords(data.listdataProducts.paginationInfo.totalCount)
+        }
+      } catch (err: any) {
+        alert("error");
+        setMessage(err.message);
+        setTimeout(() => {
+          setMessage('');
+        }, 3000);
+      }
     }
 
     useEffect(() => {
@@ -102,10 +115,11 @@ const Productlist = () => {
       }
 
     return(
-    <div className="container">
+    <div className="container-fluid h-100 bg-dark"> 
+      <div className='container bg-dark'>
             <h1 className='text-white'>Products List</h1>
             <div className='text-warning xtop'>{message}</div>
-            <table className="table mt-4">
+            <table className="table table-warning table-striped  mt-4">
             <thead>
                 <tr>
                 <th scope="col">#</th>
@@ -120,11 +134,11 @@ const Productlist = () => {
             {products.map((item) => {
             return (
               <tr key={item['id']}>
-                 <td>{item['id']}</td>
+                 <td>{item['id'].match(/\d+/)}</td>
                  <td>{item['descriptions']}</td>
                  <td>{item['qty']}</td>
                  <td>{item['unit']}</td>
-                 <td>&#8369;{toDecimal(item['sellPrice'])}</td>
+                 <td><span className='text-danger'>&#8369;</span>{toDecimal( item['sellprice'])}</td>
                </tr>
               );
         })}
@@ -141,7 +155,8 @@ const Productlist = () => {
 
         </ul>
       </nav>
-    <Footer/>
+      <div className='text-white'>TOTAL RECORDS : {totrecords}</div>
+      </div>
   </div>
   )
 }

@@ -254,16 +254,18 @@ export default function Profile() {
             });
 
             if (res.data.data?.errors) {
+              console.log(res.data.errors);
               setMessage(res.data.errors[0].message);
             } else {
                setMessage(res.data.data.uploadPictureUser.user.message);
                let pic: string = `https://127.0.0.1:8000/users/${res.data.data.uploadPictureUser.user.userpic}`;
                setProfilepic(pic);
             }
-            setTimeout(() => setMessage(''), 3000);
+            // setTimeout(() => setMessage(''), 3000);
 
         } catch (error: any) {
             const errorMsg = error.response?.data?.errors?.[0]?.message || error.message;
+            console.log(errorMsg);
             setMessage(errorMsg);
             setTimeout(() => setMessage(''), 3000);
         }

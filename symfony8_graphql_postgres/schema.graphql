@@ -1,5 +1,20 @@
 type Query {
   node(id: ID!): Node
+  listProduct(page: Int): Product
+  sale(id: ID!): Sale
+  sales(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): SaleCursorConnection
   user(id: ID!, extraParam: String): User
   users(
     "Returns the first n elements from the list."
@@ -20,6 +35,53 @@ type Query {
 interface Node {
   "The id of this node."
   id: ID!
+}
+
+type Product implements Node {
+  id: ID!
+  _id: Int!
+  category: String
+  descriptions: String!
+  qty: Int!
+  unit: String
+  costprice: String!
+  sellprice: String!
+  saleprice: String!
+  productpicture: String
+  alertstocks: Int!
+  criticalstocks: Int!
+  createdAt: String!
+  updatedAt: String
+}
+
+type Sale implements Node {
+  id: ID!
+  _id: Int!
+  saleamount: String!
+  saledate: String
+  saleAmount: String!
+  saleDate: String!
+}
+
+"Cursor connection for Sale."
+type SaleCursorConnection {
+  edges: [SaleEdge]
+  pageInfo: SalePageInfo!
+  totalCount: Int!
+}
+
+"Edge of Sale."
+type SaleEdge {
+  node: Sale
+  cursor: String!
+}
+
+"Information about the current page."
+type SalePageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
 }
 
 type User implements Node {
@@ -72,6 +134,15 @@ type UserPageInfo {
 }
 
 type Mutation {
+  "Updates a Sale."
+  updateSale(input: updateSaleInput!): updateSalePayload
+
+  "Deletes a Sale."
+  deleteSale(input: deleteSaleInput!): deleteSalePayload
+
+  "Creates a Sale."
+  createSale(input: createSaleInput!): createSalePayload
+
   "Creates a User."
   createUser(input: createUserInput!): createUserPayload
 
@@ -92,6 +163,49 @@ type Mutation {
 
   "UploadPictures a User."
   uploadPictureUser(input: uploadPictureUserInput!): uploadPictureUserPayload
+}
+
+"Updates a Sale."
+input updateSaleInput {
+  id: ID!
+  saleamount: String
+  saledate: String
+  saleAmount: String
+  saleDate: String
+  clientMutationId: String
+}
+
+"Updates a Sale."
+type updateSalePayload {
+  sale: Sale
+  clientMutationId: String
+}
+
+"Deletes a Sale."
+input deleteSaleInput {
+  id: ID!
+  clientMutationId: String
+}
+
+"Deletes a Sale."
+type deleteSalePayload {
+  sale: Sale
+  clientMutationId: String
+}
+
+"Creates a Sale."
+input createSaleInput {
+  saleamount: String!
+  saledate: String
+  saleAmount: String!
+  saleDate: String!
+  clientMutationId: String
+}
+
+"Creates a Sale."
+type createSalePayload {
+  sale: Sale
+  clientMutationId: String
 }
 
 "Creates a User."

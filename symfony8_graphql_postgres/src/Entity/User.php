@@ -33,11 +33,9 @@ use App\Dto\UploadPictureUserPayload;
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
-
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\HasLifecycleCallbacks]
-// #[Vich\UploadableField(mapping: 'user_avatar', fileNameProperty: 'userpic')]
 #[UniqueEntity(fields: ['email'], message: 'address is already taken.')]
 #[UniqueEntity(fields: ['username'], message: 'is already taken.')]
 #[Vich\Uploadable]
@@ -150,7 +148,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
             ],
             output: UploadPictureUserPayload::class,
             read: false,
-            // serialize: true,
+            write: true,
             validate: false,
             deserialize: false,
             description: 'Upload user profile picture code with a custom success message'
@@ -222,10 +220,19 @@ class User implements TwoFactorInterface, UserInterface, PasswordAuthenticatedUs
     #[Groups(['user:read'])]
     private ?string $qrcodeurl;
 
+    // #[ORM\Column(type: 'string', length: 10, options: ["default" => 'pix.png'])]
+    // #[ApiProperty(readable: true)]
+    // #[Groups(['user:create','user:read'])]
+    // private ?string $userpic = "pix.png";
     #[ORM\Column(type: 'string', length: 10, options: ["default" => 'pix.png'])]
-    #[ApiProperty(readable: true)]
-    #[Groups(['user:create','user:read'])]
-    private ?string $userpic = "pix.png";
+    #[ApiProperty(
+        readable: true,
+        openapiContext: ['default' => 'pix.png'], // For OpenAPI/Swagger docs
+        jsonldContext: ['default' => 'pix.png'],
+        default: 'pix.png' // Sets the default in the GraphQL schema
+    )]
+    #[Groups(['user:create', 'user:read'])]
+    private ?string $userpic = 'pix.png';
 
 
     #[ORM\Column(type: 'datetime_immutable')]

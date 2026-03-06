@@ -12,14 +12,3 @@ api_platform:
             enabled: false # Optional alternative IDE
 
 
-# api_platform:
-#     title: Hello API Platform
-#     version: 1.0.0
-#     graphql:
-#         enabled: true
-#         graphiql: { enabled: true }
-#     defaults:
-#         stateless: true
-#         cache_headers:
-#             vary: ['Content-Type', 'Authorization', 'Origin']
-

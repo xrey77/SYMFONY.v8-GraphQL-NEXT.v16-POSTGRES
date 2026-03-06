@@ -2,22 +2,26 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use DateTimeImmutable;
 
-#[ApiResource]
 #[ORM\Entity]
 #[ORM\HasLifecycleCallbacks] 
+#[ApiResource] 
 class Sale
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ["default" => 0])]
+    #[Groups(['user:read'])]
     private ?string $saleamount;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]

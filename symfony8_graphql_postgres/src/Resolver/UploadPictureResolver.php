@@ -10,6 +10,8 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Routing\RouterInterface;
 use ApiPlatform\Metadata\IriConverterInterface;
 use Doctrine\ORM\EntityManagerInterface;
+// use Symfony\Component\HttpKernel\Exception\HttpException;
+
 
 final class UploadPictureResolver implements MutationResolverInterface
 {
@@ -17,8 +19,9 @@ final class UploadPictureResolver implements MutationResolverInterface
         #[Autowire('%kernel.project_dir%')]
         private string $projectDir,
         private IriConverterInterface $iriConverter,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
     ) {}
+
 
     /**
      * @param User|null $item
@@ -26,7 +29,9 @@ final class UploadPictureResolver implements MutationResolverInterface
     public function __invoke($item, array $context): UploadPictureUserPayload
     {
         $output = new ConsoleOutput();
+
         $input = $context['args']['input'] ?? [];
+
 
         $uploadedFile = $input['file'] ?? null;
         if (!$uploadedFile instanceof UploadedFile) {
@@ -36,51 +41,22 @@ final class UploadPictureResolver implements MutationResolverInterface
         $user = $this->iriConverter->getResourceFromIri($input['id']);
 
         if (!$user instanceof User) {
-            throw new \RuntimeException('User not found.');
+            throw new \Exception('User not found.');
         }
 
         $id = (string)$user->getId();
         $fileName = "00" . $id . '.' . $uploadedFile->guessExtension();
 
-        // FIX: Use $user instead of $item
-        $user->setUserpic($fileName);
-
         $destination = $this->projectDir . '/public/users';
         $uploadedFile->move($destination, $fileName);    
-
-        // $this->entityManager->persist($user);
-        // $this->entityManager->flush();
-        $output->writeln('end..................................');
-
+        $user->setUserpic($fileName);
+        $this->entityManager->persist($user);
         $user->setMessage('You have updated your profile picture successfully.');
-        
         return new UploadPictureUserPayload(
-            (string) $user->getId(),
+            $user->getId(),
             $user->getUserpic(),
             $user->getMessage(),
-            $user // Pass the updated user object back
+            $user
         );
-
-
-        // $user = $this->iriConverter->getResourceFromIri($input['id']);
-        // $id = (string)$user->getId();
-
-        // $fileName = "00" . $id . '.' . $uploadedFile->guessExtension();
-        // $item->setUserpic($fileName);
-        
-        // $destination = $this->projectDir . '/public/users';
-        // $uploadedFile->move($destination, $fileName);    
-        
-        // $this->entityManager->persist($item);
-        // $this->entityManager->flush();
-
-        // $item->setMessage('You have updated your profile picture successfully.');
-
-        // return new UploadPictureUserPayload(
-        //     (string) $item->getId(),
-        //     $item->getUserpic(),
-        //     $item->getMessage(),
-        //     $item
-        // );    
     }
 }

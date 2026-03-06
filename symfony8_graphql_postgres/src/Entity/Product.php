@@ -2,49 +2,101 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\ProductRepository;
+use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\GraphQl\Mutation;
+use App\Resolver\GetProductPageResolver;
+use App\Resolver\GetProductSearchResolver;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use DateTimeImmutable;
+use App\Dto\ProductListInput;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
-#[ApiResource]
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[ORM\Table(name: '`product`')]
 #[ORM\HasLifecycleCallbacks] 
+#[UniqueEntity(fields: ['descriptions'], message: 'is already taken.')]
+#[ApiResource(
+    graphQlOperations: [
+        new QueryCollection(
+            name: 'listdata',
+            resolver: GetProductPageResolver::class,
+            paginationType: 'page', 
+            args: [
+                'page' => ['type' => 'Int']
+            ],            
+            read: false
+        ), 
+        new QueryCollection(
+            name: 'searchdata',
+            resolver: GetProductSearchResolver::class,
+            paginationType: 'page', 
+            args: [
+                'page' => ['type' => 'Int'],
+                'keyword' => ['type' => 'String']
+            ],            
+            read: false
+        ), 
+        
+    ]
+)]
 class Product
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['user:read'])]
     private ?string $category;
 
     #[ORM\Column(length: 255, unique: true, nullable: false)]
+    #[Groups(['user:read'])]
     private ?string $descriptions;
 
     #[ORM\Column(length: 5, options: ["default" => 0])]
+    #[Groups(['user:read'])]
     private ?int $qty;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['user:read'])]
     private ?string $unit;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ["default" => 0])]
+    // #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ["default" => 0])]
+    // #[Groups(['user:read'])]
+
+    #[ApiProperty(openapiContext: ['type' => 'number', 'format' => 'float'])]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['user:read'])]    
     private ?string $costprice;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ["default" => 0])]
+    // #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ["default" => 0])]
+    // #[Groups(['user:read'])]
+    #[ApiProperty(openapiContext: ['type' => 'number', 'format' => 'float'])]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['user:read'])]    
     private ?string $sellprice;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ["default" => 0])]
-    private ?string $saleprice;
+    #[Groups(['user:read'])]
+    private ?float $saleprice;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['user:read'])]
     private ?string $productpicture;
 
     #[ORM\Column(length: 5, options: ["default" => 0])]
+    #[Groups(['user:read'])]
     private ?int $alertstocks;
 
     #[ORM\Column(length: 5, options: ["default" => 0])]
+    #[Groups(['user:read'])]
     private ?int $criticalstocks;
 
     #[ORM\Column(type: 'datetime_immutable')]    
@@ -52,6 +104,49 @@ class Product
     
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private \DateTimeImmutable $updatedAt;
+
+    private ?int $page;
+    private ?int $totalpage;
+    private ?int $totalrecords;
+
+    public function getPage(): ?int
+    {
+        return $this->page;
+    }
+
+    public function setPage(int $page): static
+    {
+        $this->page = $page;
+
+        return $this;
+    }
+
+    public function getTotalpage(): ?int
+    {
+        return $this->totalpage;
+    }
+
+    public function setTotalpage(int $totalpage): static
+    {
+        $this->totalpage = $totalpage;
+
+        return $this;
+    }
+
+    public function getTotalrecords(): ?int
+    {
+        return $this->totalrecords;
+    }
+
+    public function setTotalrecords(int $totalrecords): static
+    {
+        $this->totalrecords = $totalrecords;
+
+        return $this;
+    }
+
+
+
 
     public function getId(): ?int
     {
