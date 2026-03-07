@@ -30,6 +30,6 @@
     ".next/dev/types/**/*.ts",
     "bootstrap.d.ts",
     "**/*.mts"
-, "app/____layout."  ],
+, "app/____layout.", "app/api/pdf/page.ts"  ],
   "exclude": ["node_modules"]
 }

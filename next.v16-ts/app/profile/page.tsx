@@ -88,7 +88,6 @@ export default function Profile() {
   const [qrcode, setQrcode] = useState<string>('');
   const [token, setToken] = useState<string>('');
   const [showsave, setShowsave] = useState<boolean>(false);
-  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const fetchData = async (id: string, token: string) => {
     setMessage("Pls wait, retrieving data..")
@@ -261,7 +260,7 @@ export default function Profile() {
                let pic: string = `https://127.0.0.1:8000/users/${res.data.data.uploadPictureUser.user.userpic}`;
                setProfilepic(pic);
             }
-            // setTimeout(() => setMessage(''), 3000);
+            setTimeout(() => setMessage(''), 3000);
 
         } catch (error: any) {
             const errorMsg = error.response?.data?.errors?.[0]?.message || error.message;

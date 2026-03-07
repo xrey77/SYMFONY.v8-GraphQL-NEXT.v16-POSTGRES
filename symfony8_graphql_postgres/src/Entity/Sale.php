@@ -3,15 +3,30 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use Symfony\Component\Serializer\Annotation\Groups;
-use App\Repository\ProductRepository;
+use ApiPlatform\Metadata\ApiProperty;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\GraphQl\Mutation;
+use App\Repository\SaleRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use DateTimeImmutable;
+use App\Resolver\SalesDataResolver;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SaleRepository::class)]
+#[ORM\Table(name: '`sale`')]
 #[ORM\HasLifecycleCallbacks] 
-#[ApiResource] 
+#[ApiResource(
+    graphQlOperations: [
+        new QueryCollection(
+            name: 'saledata',
+            resolver: SalesDataResolver::class,
+            paginationEnabled: false,
+            read: false
+        ),         
+    ]
+)]
 class Sale
 {
     #[ORM\Id]
@@ -25,6 +40,7 @@ class Sale
     private ?string $saleamount;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    #[Groups(['user:read'])]
     private \DateTimeImmutable $saledate;
 
     public function getId(): ?int

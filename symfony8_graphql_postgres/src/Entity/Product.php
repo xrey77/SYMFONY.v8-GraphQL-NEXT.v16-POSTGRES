@@ -2,18 +2,21 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use App\Repository\ProductRepository;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use App\Resolver\GetProductPageResolver;
 use App\Resolver\GetProductSearchResolver;
+use App\Resolver\ReportDataResolver;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use DateTimeImmutable;
 use App\Dto\ProductListInput;
+use App\Dto\ProductReportPayload;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
@@ -41,7 +44,12 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
             ],            
             read: false
         ), 
-        
+        new QueryCollection(
+            name: 'reportdata',
+            resolver: ReportDataResolver::class,
+            paginationEnabled: false,
+            read: false
+        ),         
     ]
 )]
 class Product
@@ -57,6 +65,7 @@ class Product
     private ?string $category;
 
     #[ORM\Column(length: 255, unique: true, nullable: false)]
+    #[ApiProperty(readable: true)]
     #[Groups(['user:read'])]
     private ?string $descriptions;
 

@@ -6,11 +6,10 @@ use App\Entity\User;
 use App\Dto\UploadPictureUserPayload;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Console\Output\ConsoleOutput;
+// use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Routing\RouterInterface;
 use ApiPlatform\Metadata\IriConverterInterface;
 use Doctrine\ORM\EntityManagerInterface;
-// use Symfony\Component\HttpKernel\Exception\HttpException;
 
 
 final class UploadPictureResolver implements MutationResolverInterface
@@ -28,7 +27,7 @@ final class UploadPictureResolver implements MutationResolverInterface
      */
     public function __invoke($item, array $context): UploadPictureUserPayload
     {
-        $output = new ConsoleOutput();
+        // $output = new ConsoleOutput();
 
         $input = $context['args']['input'] ?? [];
 
@@ -51,6 +50,7 @@ final class UploadPictureResolver implements MutationResolverInterface
         $uploadedFile->move($destination, $fileName);    
         $user->setUserpic($fileName);
         $this->entityManager->persist($user);
+        $this->entityManager->flush();
         $user->setMessage('You have updated your profile picture successfully.');
         return new UploadPictureUserPayload(
             $user->getId(),

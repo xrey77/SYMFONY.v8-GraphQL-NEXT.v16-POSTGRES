@@ -243,7 +243,7 @@ a {
 }
 
 .user {
-  width: 40px;
+  width: 40px !important;
   height: 40px;
   color: 'white' !important;
   margin-left: -100% !important;
@@ -316,9 +316,20 @@ a {
 }
 
 .h-100 {
-  height: 600px !important;
+  height: 680px !important;
 }
 
 .pagination {
   margin-left: 10px !important;
+}
+
+.top-chart {
+  margin-top: -40px !important;
+}
+
+.btn-print {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;  
 }

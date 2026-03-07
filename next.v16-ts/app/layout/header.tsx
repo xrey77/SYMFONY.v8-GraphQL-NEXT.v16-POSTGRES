@@ -58,7 +58,7 @@ export default function Header({}) {
     <div>
     <nav className="navbar navbar-expand-lg bg-dark">
       <div className="container-fluid">
-        <Link className="navbar-brand" href={"/"}><Image className='logo' src={"/images/logo.png"} width={30} height={30} alt={"logo"} /></Link>
+        <Link className="navbar-brand" href={"/"}><img className='logo' src={"/images/logo.png"} alt={"logo"} /></Link>
         <button className="navbar-toggler" type="button"  data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasWithBothOptions">
           <span className="navbar-toggler-icon"><Image className='burger' src={'/images/bar.png'} width={30} height={30} alt={""} /></span>
         </button>
@@ -84,8 +84,8 @@ export default function Header({}) {
               &nbsp;Reports
               </Link>
               <ul id="nav2b" className="dropdown-menu">
-                <li><Link className="dropdown-item" href={"/productlist"}>Products Report-(PDF)</Link></li>
-                <li><Link className="dropdown-item" href={"/productcatalog"}>Annual Sales Chart</Link></li>
+                <li><Link className="dropdown-item" href={"/pdfreport"}>Products Report-(PDF)</Link></li>
+                <li><Link className="dropdown-item" href={"/saleschart"}>Annual Sales Chart</Link></li>
               </ul>
             </li>
 
@@ -164,8 +164,8 @@ export default function Header({}) {
                   &nbsp;Reports
                 </Link>
                 <ul className="dropdown-menu">
-                  <li data-bs-dismiss="offcanvas"><Link className="dropdown-item" href={"/productlist"}>Products Report-(PDF)</Link></li>
-                  <li data-bs-dismiss="offcanvas"><Link className="dropdown-item" href={"/productcatalog"}>Annual Sales Chart</Link></li>
+                  <li data-bs-dismiss="offcanvas"><Link className="dropdown-item" href={"/pdfreport"}>Products Report-(PDF)</Link></li>
+                  <li data-bs-dismiss="offcanvas"><Link className="dropdown-item" href={"/saleschart"}>Annual Sales Chart</Link></li>
                 </ul>
             </li>
 
@@ -197,28 +197,6 @@ export default function Header({}) {
                   </li>
                 </ul>           
 
-                // <ul className="navbar-nav mr-auto">
-                //   <li className="nav-item dropdown">
-                //     <Link className="nav-link dropdown-toggle text-white" href={"/#"} role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                //       <Image width={30} height={30} src={profilepic}  className='user' alt='' />
-                //       <span className='text-white'>{username}</span>
-                //     </Link>
-                //     <ul className="dropdown-menu">
-                //       <li data-bs-dismiss="offcanvas">
-                //         <Link onClick={logout} className="dropdown-item" href={"/#"}>LogOut</Link>
-                //       </li>
-                //       <li className="nav-item"><hr/></li>
-                //       <li data-bs-dismiss="offcanvas">
-                //         <Link className="dropdown-item" href={"/profile"}>Profile</Link> 
-                //       </li>
-                //       <li><hr className="dropdown-divider"/></li>
-                //       <li data-bs-dismiss="offcanvas">
-                //         <Link className="dropdown-item" href={"/#"}>Messenger</Link>
-                //       </li>
-                //     </ul>
-                //   </li>          
-                //   <li className="nav-item"><hr/></li>                                        
-                // </ul>                    
               ) : (
                   <ul className="nav flex-column">
                     <li className="nav-item" data-bs-dismiss="offcanvas">

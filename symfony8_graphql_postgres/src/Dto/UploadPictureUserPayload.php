@@ -4,7 +4,8 @@ namespace App\Dto;
 
 use App\Entity\User;
 use ApiPlatform\Metadata\GraphQl\Mutation;
-use Symfony\Component\Serializer\Annotation\Groups;
+// use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(graphQlOperations: [])]
 final class UploadPictureUserPayload

@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
 use Scheb\TwoFactorBundle\Model\Totp\TotpConfigurationInterface;
@@ -32,6 +32,7 @@ use App\Dto\VerifyOtpPayload;
 use App\Dto\UploadPictureUserPayload;
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use ApiPlatform\Metadata\ApiProperty;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -64,7 +65,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
             ],            
             output: CreatePayload::class,
             read: false,
-            serialize: true,            
+            serialize: true,
             description: 'Creates a new user with a custom success message'             
         ),
         new Mutation(
@@ -148,7 +149,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
             ],
             output: UploadPictureUserPayload::class,
             read: false,
-            write: true,
+            write: false,
             validate: false,
             deserialize: false,
             description: 'Upload user profile picture code with a custom success message'
