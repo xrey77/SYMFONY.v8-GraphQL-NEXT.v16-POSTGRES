@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, ChangeEvent } from 'react'
 import { client } from '@/lib/ApolloClient';
 import { gql } from '@apollo/client'
 
@@ -14,6 +14,13 @@ const SIGNUP_USER = gql`
   }
   `
 
+interface RegisterResponse {
+  createUser: {
+    user: {
+      message: string
+    }
+  }
+}
 export default function Register() {
     const [firstname, setFirstname] = useState<string>('');
     const [lastname, setLastname] = useState<string>('');
@@ -33,12 +40,12 @@ export default function Register() {
       setPassword("");
     }
 
-    const submitRegistration = async (e: React.FormEvent<HTMLFormElement>) => {
+    const submitRegistration = async (e: ChangeEvent<HTMLFormElement>) => {
         e.preventDefault(); 
 
       try {
 
-        const { data } = await client.mutate({
+        const { data } = await client.mutate<RegisterResponse>({
           mutation: SIGNUP_USER,
           variables: { 
             firstname: firstname,

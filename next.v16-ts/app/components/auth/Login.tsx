@@ -1,7 +1,7 @@
 'use client'
 
 import { client } from '@/lib/ApolloClient';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, ChangeEvent } from 'react'
 import Mfa from './Mfa';
 import { gql } from '@apollo/client'
 
@@ -26,13 +26,30 @@ const SIGNIN_USER = gql`
     }
   }
   `
+interface LoginResponse {
+  loginUser: {
+    user: {
+      id: string;
+      firstname: string,
+      lastname: string,
+      email: string,      
+      username: string;
+      isactivated: number,
+      isblocked: number,
+      roles: string[];
+      userpic: string;
+      qrcodeurl: string | null;
+      token: string;
+      message: string;
+    }
+  }
+}
 
 export default function Login() {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loginmessage, setLoginMessage] = useState<string>('');
   const [dizable, setDizable] = useState<boolean>(false);
-
 
   useEffect(() => {
     const initJS = async () => {
@@ -44,22 +61,22 @@ export default function Login() {
 
   },[])
   
-  const submitLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  const submitLogin = async (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     setDizable(true);
     setLoginMessage("Please wait..");
 
     try {
 
-      const { data } = await client.mutate({
+      const { data } = await client.mutate<LoginResponse>({
         mutation: SIGNIN_USER,
         variables: { username: username, password: password }
-      });
+      });      
 
       if (data?.loginUser.user) {
         setLoginMessage(data.loginUser.user.message);
         if (data.loginUser.user.qrcodeurl) {
-            let xid: string = data.loginUser.user.id;
+            let xid: any = data.loginUser.user.id;
             const idno = xid.split('/').pop();
             window.sessionStorage.setItem('USERID', idno);
             window.sessionStorage.setItem('ROLES',data.loginUser.user.roles[0]);
@@ -71,7 +88,7 @@ export default function Login() {
 
         } else {
 
-          let xid: string = data.loginUser.user.id;
+          let xid: any = data.loginUser.user.id;
           const idno = xid.split('/').pop();
           window.sessionStorage.setItem('USERID', idno);
           window.sessionStorage.setItem('USERNAME',data.loginUser.user.username);

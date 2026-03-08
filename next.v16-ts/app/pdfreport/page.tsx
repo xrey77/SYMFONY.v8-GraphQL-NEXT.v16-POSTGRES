@@ -13,10 +13,23 @@ const GET_REPORTDATA = gql`
       descriptions
       qty
       unit
+      costprice
       sellprice
     }
   }
 `;
+
+interface Product {
+      id: number,
+      descriptions: string,
+      qty: number,
+      unit: string,
+      sellprice: number
+}
+
+interface PdfReportResponse {
+  reportdataProducts: Product[]; 
+}
 
 const PdfReport = () => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -24,11 +37,10 @@ const PdfReport = () => {
 
   const fetchAndGenerate = async () => {
     try {
-      const { data } = await client.query({ query: GET_REPORTDATA });
+      const { data } = await client.query<PdfReportResponse>({ query: GET_REPORTDATA });
       const products = data?.reportdataProducts || [];
 
       if (products.length > 0) {
-        // Generate the PDF blob
         const doc = <ReportTemplate products={products} />;
         const blob = await pdf(doc).toBlob();
         const url = URL.createObjectURL(blob);

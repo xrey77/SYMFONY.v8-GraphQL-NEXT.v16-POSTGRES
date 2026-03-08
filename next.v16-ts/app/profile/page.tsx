@@ -1,7 +1,6 @@
 'use client'
 
-import React, { ChangeEvent, useEffect, useState } from 'react'
-import jQuery from 'jquery';
+import React, { SubmitEvent, useEffect, useState } from 'react'
 import Image from 'next/image';
 import { client } from '@/lib/ApolloClient';
 import { gql } from '@apollo/client'
@@ -27,6 +26,20 @@ const GET_USERID = gql`
     }
   }
   `
+interface GetUserIdResponse {
+  user: {
+    id: number,
+    firstname: string,
+    lastname: string,
+    email: string,
+    mobile: string,
+    username: string,
+    isactivated: number,
+    isblocked: number,
+    userpic: string,
+    qrcodeurl: string
+  }
+}
 
   const UPDATE_PROFILE = gql`
   mutation updateProfile($id: ID!, $firstname: String!, $lastname: String!, $mobile: String!) {
@@ -38,6 +51,14 @@ const GET_USERID = gql`
     }
   }
   `
+interface UpdateProfileResponse {
+  updateProfileUser: {
+    user: {
+        id: number,
+        message: string
+    }
+  }
+}
 
 const UPDATE_PASSWORD = gql`
   mutation updatePassword($id: ID!, $password: String!) {
@@ -49,6 +70,14 @@ const UPDATE_PASSWORD = gql`
     }
   }
   `
+interface UpdatePasswordResponse {
+  updatePasswordUser: {
+    user: {
+      id: number,
+      message: string
+    }
+  }
+}
 
 const ACTIVATE_MFA = gql`
   mutation activateMfa($id: ID!, $twofactorenabled: Boolean!) {
@@ -61,18 +90,28 @@ const ACTIVATE_MFA = gql`
     }
   }
   `
-
- const UPLOAD_PROFILEPIC = gql`
-  mutation uploadPicture($id: ID!, $userpic: Upload!) {
-    uploadPictureUser(input: {id: $id, userpic: $userpic}) {
-      user {
-        id
-        userpic
-        message
-      }
+interface ActivateMfaResponse{
+  activateMfaUser: {
+    user: {
+      id: number,
+      qrcodeurl: string,
+      message: string
     }
   }
-  `
+}
+
+  interface UploadResponse {
+  data?: {
+    uploadPictureUser: {
+      user: {
+        id: string;
+        userpic: string;
+        message: string;
+      }
+    }
+  };
+  errors?: Array<{ message: string }>;
+}
 
 
 export default function Profile() {
@@ -94,7 +133,7 @@ export default function Profile() {
 
       try {
 
-        const { data } = await client.query({
+        const { data } = await client.query<GetUserIdResponse>({
           query: GET_USERID,
           variables: { 
             id: userid,
@@ -128,6 +167,17 @@ export default function Profile() {
       }
   }
   
+    useEffect(() => {
+      const initJS = async () => {
+        const $ = (await import('jquery')).default;
+        (window as any).$ = (window as any).jQuery = $;
+      };
+  
+      initJS();
+  
+    },[])
+  
+  
   useEffect(() => {
     jQuery("#cpwd").hide();
     jQuery("#qcode").hide();
@@ -147,12 +197,12 @@ export default function Profile() {
     setMessage('');
   },[userid, token]);
 
-  const updateProfile =  async (e: ChangeEvent<HTMLInputElement>) => {
+  const updateProfile =  async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); 
 
       try {
 
-        const { data } = await client.mutate({
+        const { data } = await client.mutate<UpdateProfileResponse>({
           mutation: UPDATE_PROFILE,
           variables: { 
             id: userid,
@@ -214,7 +264,8 @@ export default function Profile() {
     }
   }
 
-  const changeProfilepic = async (event: ChangeEvent<HTMLInputElement>) => {
+  //
+  const changeProfilepic = async (event: SubmitEvent<HTMLInputElement>) => {
     event.preventDefault();
     const file = event.target.files?.[0] || null;
 
@@ -245,21 +296,20 @@ export default function Profile() {
 
       try {
 
-            const res = await api.post('', formData, {
+            const res = await api.post<UploadResponse>('', formData, {
                 headers: {
                     'apollo-require-preflight': 'true',
                     Authorization: `Bearer ${token}`
                   }
             });
 
-            if (res.data.data?.errors) {
-              console.log(res.data.errors);
+            if (res.data.errors) {
               setMessage(res.data.errors[0].message);
-            } else {
-               setMessage(res.data.data.uploadPictureUser.user.message);
-               let pic: string = `https://127.0.0.1:8000/users/${res.data.data.uploadPictureUser.user.userpic}`;
-               setProfilepic(pic);
-            }
+            } else if (res.data.data) {
+              const user = res.data.data.uploadPictureUser.user;
+              setMessage(user.message);
+              setProfilepic(`https://127.0.0.1:8000/users/${user.userpic}`);
+            }              
             setTimeout(() => setMessage(''), 3000);
 
         } catch (error: any) {
@@ -275,7 +325,7 @@ export default function Profile() {
 
       try {
 
-        const { data } = await client.mutate({
+        const { data } = await client.mutate<ActivateMfaResponse>({
           mutation: ACTIVATE_MFA,
           variables: { 
             id: userid,
@@ -302,7 +352,7 @@ export default function Profile() {
   const deactivateMFA = async () => {
       try {
 
-        const { data } = await client.mutate({
+        const { data } = await client.mutate<ActivateMfaResponse>({
           mutation: ACTIVATE_MFA,
           variables: { 
             id: userid,
@@ -352,7 +402,7 @@ export default function Profile() {
 
       try {
 
-        const { data } = await client.mutate({
+        const { data } = await client.mutate<UpdatePasswordResponse>({
           mutation: UPDATE_PASSWORD,
           variables: { 
             id: userid,
@@ -388,11 +438,11 @@ export default function Profile() {
               <div className='col'>
                 <div className="mb-3">
                   <label htmlFor="firstname" className="form-label">First Name</label>
-                  <input type="text" className="form-control input-border" value={firstname} onChange={e => setFirstname(e.target.value)}/>
+                  <input type="text" className="form-control input-border" value={firstname} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFirstname(e.target.value)}/>
                 </div>            
                 <div className="mb-3">
                   <label htmlFor="lastname" className="form-label">Last Name</label>
-                  <input type="text" className="form-control input-border" value={lastname} onChange={e => setLastname(e.target.value)}/>
+                  <input type="text" className="form-control input-border" value={lastname} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastname(e.target.value)}/>
                 </div>            
               </div>
               <div className='col'>
@@ -400,7 +450,7 @@ export default function Profile() {
                       <div className='user-pix-box'>
                         <img id="userpic" src={profilepic}  className='userprofile' alt={''}/>
                       </div>
-                      <input type="file" onChange={e => changeProfilepic(e)} className="form-control form-control-sm" id="profilepic"/>
+                      <input type="file" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfilepic(e.target.value)} className="form-control form-control-sm" id="profilepic"/>
                     </div>                                    
               </div>
             </div>
@@ -409,13 +459,13 @@ export default function Profile() {
               <div className='col'>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">Email Address</label>
-                  <input type="email" readOnly className="form-control input-border" value={email} onChange={e => setEmail(e.target.value)}/>
+                  <input type="email" readOnly className="form-control input-border" value={email}/>
                 </div>            
               </div>
               <div className='col'>
                 <div className="mb-3">
                   <label htmlFor="mobile" className="form-label">Mobile No.</label>
-                  <input type="text" className="form-control input-border" value={mobile} onChange={e => setMobile(e.target.value)}/>
+                  <input type="text" className="form-control input-border" value={mobile} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMobile(e.target.value)}/>
                 </div>            
               </div>              
             </div>
@@ -431,10 +481,12 @@ export default function Profile() {
                   </div>
                   <div id="cpwd">
                      <div className="mb-3">
-                       <input type="password" className="form-control" value={password} onChange={e => setPassword(e.target.value)} placeholder='enter new password.'/>
+                       <input type="password" className="form-control" value={password} 
+                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} placeholder='enter new password.'/>
                      </div>            
                      <div className="mb-3">
-                       <input type="password" className="form-control" value={confpassword} onChange={e => setConfpassword(e.target.value)} placeholder='enter new password confirmation.'/>
+                       <input type="password" className="form-control" value={confpassword} 
+                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfpassword(e.target.value)} placeholder='enter new password confirmation.'/>
                      </div>            
                      <button onClick={changePassword} type="button" className='btn btn-primary'>change password</button>
                   </div> 

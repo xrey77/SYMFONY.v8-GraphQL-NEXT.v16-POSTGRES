@@ -11,7 +11,8 @@ import {
   BarElement, 
   Title, 
   Tooltip, 
-  Legend 
+  Legend, 
+  ChartOptions
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { ChartData } from 'chart.js';
@@ -26,17 +27,103 @@ const GET_SALESDATA = gql`
     }
   }
   `
+interface SalesQueryResponse {
+  saledataSales: {
+    id: string;
+    saleamount: number;
+    saledate: string;
+  }[];
+}
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataLabels
 );
 
 
-const options = {
+// const options: ChartOptions<'bar'> = {
+//   responsive: true,
+//   layout: {
+//     padding: {
+//       top: 40 
+//     }
+//   },
+//   scales: {
+//     x: { 
+//       ticks: {
+//         color: 'black', // bottom labels
+//       },
+//     },    
+//     y: {
+//       beginAtZero: true,
+//       position: 'left',
+//       ticks: {
+//         color: 'black',  
+//         autoSkip: false,
+//         callback: (value: string | number) => 
+//           new Intl.NumberFormat('en-US', { 
+//             style: 'currency', 
+//             currency: 'USD',
+//             minimumFractionDigits: 2 
+//           }).format(Number(value)),
+//       }
+//     }    
+//   },  
+//   plugins: {
+//     datalabels: {
+//       display: true,
+//       color: 'black',
+//       anchor: 'end', 
+//       align: 'top',
+//       offset: 4,
+//       font: { weight: 'bold' }, 
+//       formatter: (value: number) => {
+//         return value.toLocaleString('en-US', {
+//           style: 'currency',
+//           currency: 'USD',
+//           minimumFractionDigits: 0
+//         });
+//       },                 
+//     },    
+//     scales: {
+//       y: {
+//         beginAtZero: true,
+//         position: 'left',
+//         ticks: {
+//           autoSkip: false,          
+//           stepSize: 500,
+//         }
+//       }
+//     },    
+//     legend: { 
+//       position: 'top',
+//       labels: {
+//         color: 'black' // top legend label color
+//       }
+//     },    
+//     title: { 
+//       display: true,
+//       text: 'Annual Sales Chart',
+//       color: 'black',
+//       padding: {
+//         top: 10, 
+//         bottom: 5
+//       },
+//       font: {
+//         size: 24,
+//         family: 'Arial',
+//         weight: 'bold',
+//       }
+//     },
+//   },
+// };
+
+const options: ChartOptions<'bar'> = {
   responsive: true,
   layout: {
     padding: {
@@ -46,23 +133,24 @@ const options = {
   scales: {
     x: { 
       ticks: {
-        color: 'black', // bottom labels
+        color: 'black',
       },
     },    
     y: {
       beginAtZero: true,
       position: 'left',
       ticks: {
-        color: 'black',  //left labels
+        color: 'black',  
         autoSkip: false,
-        callback: (value) => 
-        new Intl.NumberFormat('en-US', { 
-          style: 'currency', 
-          currency: 'USD',
-          minimumFractionDigits: 2 
-        }).format(value),        
+        stepSize: 500, // Moved from the incorrect plugin section to here
+        callback: (value: string | number) => 
+          new Intl.NumberFormat('en-US', { 
+            style: 'currency', 
+            currency: 'USD',
+            minimumFractionDigits: 2 
+          }).format(Number(value)),
       }
-    }
+    }    
   },  
   plugins: {
     datalabels: {
@@ -71,31 +159,20 @@ const options = {
       anchor: 'end', 
       align: 'top',
       offset: 4,
-      font: {
-        weight: 'bold'
-      }, 
-      formatter: (value) => {
+      font: { weight: 'bold' }, 
+      formatter: (value: number) => {
         return value.toLocaleString('en-US', {
           style: 'currency',
           currency: 'USD',
           minimumFractionDigits: 0
         });
       },                 
-    },    
-    scales: {
-      y: {
-        beginAtZero: true,
-        position: 'left',
-        ticks: {
-          autoSkip: false,          
-          stepSize: 500,
-        }
-      }
-    },    
+    },
+    // REMOVED THE NESTED 'scales' BLOCK FROM HERE
     legend: { 
       position: 'top',
       labels: {
-        color: 'black' // top legend label color
+        color: 'black'
       }
     },    
     title: { 
@@ -126,8 +203,7 @@ const saleschart = () => {
     const [message, setMessage] = useState<string>('');
     const [mounted, setMounted] = useState(false);
 
-    // const chartRef = useRef<HTMLDivElement>(null);
-    const chartRef = useRef<Chart>(null); 
+    const chartRef = useRef<HTMLDivElement>(null); 
 
 
     const [chartData, setChartData] = useState<ChartData<'bar'>>({
@@ -146,12 +222,10 @@ const saleschart = () => {
 
     },[]);
 
-
-
     const logoPlugin = {
       id: 'logoPlugin',
       beforeDraw: (chart: any) => {
-        if (logo.complete) {
+        if (logo && logo.complete) {
           const { ctx, width } = chart;
           const logoWidth = 140;
           const logoHeight = 40;
@@ -159,7 +233,7 @@ const saleschart = () => {
           const y = 10; 
           
           ctx.drawImage(logo, x, y, logoWidth, logoHeight);
-        } else {
+        } else if (logo) {
           logo.onload = () => chart.draw();
         }
       }
@@ -170,13 +244,12 @@ const saleschart = () => {
 
         try {
 
-            const { data } = await client.query({
+            const { data } = await client.query<SalesQueryResponse>({
             query: GET_SALESDATA
             });
 
             if (data?.saledataSales) {
                  const sales = data.saledataSales;
-                // setSales(rawData);
 
                 setChartData({
                 labels: sales.map(item => 
@@ -200,14 +273,11 @@ const saleschart = () => {
         }
     }    
 
+
     const handlePrint = useReactToPrint({
         contentRef: chartRef,
         documentTitle: "Sales Chart Report",
     });
-
-  // const handlePrint = () => {
-  //   window.print();
-  // };
 
 
   return (

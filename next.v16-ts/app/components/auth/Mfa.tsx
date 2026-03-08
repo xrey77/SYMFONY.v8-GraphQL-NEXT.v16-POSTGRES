@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from "react"
+import React, { useState, ChangeEvent } from "react"
 import { client } from '@/lib/ApolloClient';
 import { gql } from '@apollo/client'
 
@@ -15,6 +15,15 @@ const VERIFY_OTP = gql`
   }
   `
 
+interface MfaResponse {
+    verifyOtpUser: {
+        user: {
+            username: string,
+            message: string
+        }
+    }
+}
+
 export default function Mfa() {
     const [otpcode, setOtpcode] = useState<string>('');
     const [message, setMessage] = useState<string>('');
@@ -25,7 +34,7 @@ export default function Mfa() {
         window.location.href="/";
     }
 
-    const submitMFA = async (e: React.FormEvent<HTMLFormElement>) => {
+    const submitMFA = async (e: ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();         
         setDizable(true);
         const idno = window.sessionStorage.getItem('USERID')?.toString();
@@ -33,7 +42,7 @@ export default function Mfa() {
 
         try {
 
-            const { data } = await client.mutate({
+            const { data } = await client.mutate<MfaResponse>({
             mutation: VERIFY_OTP,
             variables: { 
                 id: idno,
@@ -61,34 +70,8 @@ export default function Mfa() {
                 setMessage('');
                 setOtpcode('');
             }, 3000);
-        }
-
-
-
-        // const data =JSON.stringify({ id: idno, otp: otpcode });
-        // api.post<Mfadata>("/validateotp", data)
-        // .then((res) => {
-        //     const data: Mfadata = res.data;
-        //         setMessage(data.message);
-        //         setOtpcode('');
-        //         sessionStorage.setItem("USERNAME", data.username);
-        //         window.setTimeout(() => {
-        //           setMessage('');
-        //           window.location.reload();
-        //           setDizable(false);
-        //         }, 3000);
-        //   }, (error) => {
-        //        setMessage(error.response.data.message);
-        //         window.setTimeout(() => {
-        //           setDizable(false);
-        //           setMessage('');
-        //           setOtpcode('');
-        //         }, 3000);
-        //         return;
-        // });    
+        }    
     }
-
-
 
     return (
     <div className="modal fade" id="staticMFA" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex={-1} aria-labelledby="staticMFALabel" aria-hidden="true">

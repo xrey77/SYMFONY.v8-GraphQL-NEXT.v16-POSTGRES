@@ -30,6 +30,32 @@ const PRODUCTS_LIST = gql`
   }
   `
 
+interface Product {
+  id: number;
+  category: string;
+  descriptions: string;
+  qty: number;
+  unit: string;
+  costprice: number;
+  sellprice: number;
+  saleprice: number;
+  productpicture: string;
+  alertstocks: number;
+  criticalstocks: number;
+}
+
+interface ProductListResponse {
+  listdataProducts: {
+    collection: Product[];
+    paginationInfo: {
+      currentPage: number;
+      itemsPerPage: number;
+      lastPage: number;
+      totalCount: number;
+    };
+  };
+}
+
 const toDecimal = (number: number) => {
   const formatter = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
@@ -49,7 +75,7 @@ const Productlist = () => {
     const fetchProducts = async (pg: number) => {
       try {
 
-        const { data } = await client.query({
+        const { data } = await client.query<ProductListResponse>({
           query: PRODUCTS_LIST,
           variables: { 
             page: pg,

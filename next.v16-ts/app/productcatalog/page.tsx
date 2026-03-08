@@ -1,6 +1,5 @@
 'use client'
 
-
 import { useState, useEffect } from "react";
 import { client } from '@/lib/ApolloClient';
 import { gql } from '@apollo/client'
@@ -30,6 +29,31 @@ const PRODUCTS_CATALOG = gql`
     }
   }
   `
+interface Product {
+  id: number;
+  category: string;
+  descriptions: string;
+  qty: number;
+  unit: string;
+  costprice: number;
+  sellprice: number;
+  saleprice: number;
+  productpicture: string;
+  alertstocks: number;
+  criticalstocks: number;
+}
+
+interface ProductCatalogResponse {
+  listdataProducts: {
+    collection: Product[];
+    paginationInfo: {
+      currentPage: number;
+      itemsPerPage: number;
+      lastPage: number;
+      totalCount: number;
+    };
+  };
+}
 
 const toDecimal = (number: any) => {
   const formatter = new Intl.NumberFormat('en-US', {
@@ -43,20 +67,20 @@ const Productcatalog = () => {
     const [page, setPage] = useState<number>(1);
     const [totpage, setTotpage] = useState<number>(0);
     const [totrecords, setTotalrecords] = useState<number>(0);
-    const [products, setProducts] = useState<any[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [message, setMessage] = useState<string>('');
 
     const fetchCatalog = async (pg: number) => {
       try {
 
-        const { data } = await client.query({
+        const { data } = await client.query<ProductCatalogResponse>({
           query: PRODUCTS_CATALOG,
           variables: { 
             page: pg,
           },
         });
 
-        if (data.listdataProducts) {
+        if (data?.listdataProducts) {
           setProducts(data.listdataProducts.collection);
           setPage(data.listdataProducts.paginationInfo.currentPage);
           setTotpage(data.listdataProducts.paginationInfo.lastPage);

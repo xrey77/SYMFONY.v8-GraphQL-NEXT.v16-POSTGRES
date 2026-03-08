@@ -29,7 +29,8 @@ const PRODUCTS_SEARCH = gql`
     }
   }
   `
-const toDecimal = (number: number) => {
+
+  const toDecimal = (number: number) => {
   const formatter = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -37,6 +38,16 @@ const toDecimal = (number: number) => {
   return formatter.format(number);
 };
 
+interface SearchDataResponse {
+  searchdataProducts: {
+    collection: any[];
+    paginationInfo: {
+      currentPage: number;
+      lastPage: number;
+      totalCount: number;
+    };
+  };
+}
 const Productsearch = () => {
     const [prodsearch, setProdsearch] = useState<any[]>([]);
     const [message, setMessage] = useState('');
@@ -50,14 +61,14 @@ const Productsearch = () => {
         setMessage("please wait...");
 
       try {
-        const { data } = await client.query({
+        const { data } = await client.query<SearchDataResponse>({
           query: PRODUCTS_SEARCH,
           variables: { 
             page: page,
             keyword: searchkey
           },
         });
-        if (data.searchdataProducts) {
+        if (data?.searchdataProducts) {
           setProdsearch(data?.searchdataProducts.collection);
           setPage(data?.searchdataProducts.paginationInfo.currentPage);
           setTotalpage(data?.searchdataProducts.paginationInfo.lastPage);
@@ -73,7 +84,7 @@ const Productsearch = () => {
     const searchProducts = async (pg: number) => {
       try {
 
-        const { data } = await client.query({
+        const { data } = await client.query<SearchDataResponse>({
           query: PRODUCTS_SEARCH,
           variables: { 
             page: pg,
@@ -81,7 +92,7 @@ const Productsearch = () => {
           },
         });
 
-        if (data.searchdataProducts) {
+        if (data?.searchdataProducts) {
           setProdsearch(data?.searchdataProducts.collection);
           setPage(data?.searchdataProducts.paginationInfo.currentPage);
           setTotalpage(data?.searchdataProducts.paginationInfo.lastPage);
