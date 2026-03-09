@@ -45,89 +45,15 @@ ChartJS.register(
   ChartDataLabels
 );
 
-
-// const options: ChartOptions<'bar'> = {
-//   responsive: true,
-//   layout: {
-//     padding: {
-//       top: 40 
-//     }
-//   },
-//   scales: {
-//     x: { 
-//       ticks: {
-//         color: 'black', // bottom labels
-//       },
-//     },    
-//     y: {
-//       beginAtZero: true,
-//       position: 'left',
-//       ticks: {
-//         color: 'black',  
-//         autoSkip: false,
-//         callback: (value: string | number) => 
-//           new Intl.NumberFormat('en-US', { 
-//             style: 'currency', 
-//             currency: 'USD',
-//             minimumFractionDigits: 2 
-//           }).format(Number(value)),
-//       }
-//     }    
-//   },  
-//   plugins: {
-//     datalabels: {
-//       display: true,
-//       color: 'black',
-//       anchor: 'end', 
-//       align: 'top',
-//       offset: 4,
-//       font: { weight: 'bold' }, 
-//       formatter: (value: number) => {
-//         return value.toLocaleString('en-US', {
-//           style: 'currency',
-//           currency: 'USD',
-//           minimumFractionDigits: 0
-//         });
-//       },                 
-//     },    
-//     scales: {
-//       y: {
-//         beginAtZero: true,
-//         position: 'left',
-//         ticks: {
-//           autoSkip: false,          
-//           stepSize: 500,
-//         }
-//       }
-//     },    
-//     legend: { 
-//       position: 'top',
-//       labels: {
-//         color: 'black' // top legend label color
-//       }
-//     },    
-//     title: { 
-//       display: true,
-//       text: 'Annual Sales Chart',
-//       color: 'black',
-//       padding: {
-//         top: 10, 
-//         bottom: 5
-//       },
-//       font: {
-//         size: 24,
-//         family: 'Arial',
-//         weight: 'bold',
-//       }
-//     },
-//   },
-// };
-
 const options: ChartOptions<'bar'> = {
   responsive: true,
+  maintainAspectRatio: false,
   layout: {
     padding: {
-      top: 40 
+      top: 10,
+      left: 40,
+      right: 20,
+      bottom: 10
     }
   },
   scales: {
@@ -138,16 +64,20 @@ const options: ChartOptions<'bar'> = {
     },    
     y: {
       beginAtZero: true,
-      position: 'left',
+      afterFit: (axis) => {
+        axis.width = Math.max(axis.width, 100); 
+      },      
       ticks: {
         color: 'black',  
-        autoSkip: false,
-        stepSize: 500, // Moved from the incorrect plugin section to here
+        autoSkip: true,
+        maxRotation: 0, 
+        minRotation: 0,
+        padding: 10,         
         callback: (value: string | number) => 
           new Intl.NumberFormat('en-US', { 
             style: 'currency', 
             currency: 'USD',
-            minimumFractionDigits: 2 
+            minimumFractionDigits:  0
           }).format(Number(value)),
       }
     }    
@@ -168,7 +98,6 @@ const options: ChartOptions<'bar'> = {
         });
       },                 
     },
-    // REMOVED THE NESTED 'scales' BLOCK FROM HERE
     legend: { 
       position: 'top',
       labels: {
@@ -180,7 +109,7 @@ const options: ChartOptions<'bar'> = {
       text: 'Annual Sales Chart',
       color: 'black',
       padding: {
-        top: 10, 
+        top: 60, 
         bottom: 5
       },
       font: {
@@ -192,10 +121,10 @@ const options: ChartOptions<'bar'> = {
   },
 };
 
-interface SalesData {
-  saledate: string;
-  saleamount: number;
-}
+// interface SalesData {
+//   saledate: string;
+//   saleamount: number;
+// }
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
@@ -230,7 +159,7 @@ const saleschart = () => {
           const logoWidth = 140;
           const logoHeight = 40;
           const x = (width - logoWidth) / 2; 
-          const y = 10; 
+          const y = 25; 
           
           ctx.drawImage(logo, x, y, logoWidth, logoHeight);
         } else if (logo) {
@@ -287,7 +216,14 @@ const saleschart = () => {
         <p>Generated on: {new Date().toLocaleDateString()}</p>
       </div>
 
-      <div ref={chartRef} style={{ padding: '20px' }}>
+      <div ref={chartRef} 
+      style={{ 
+        padding: '20px', 
+        height: '500px', 
+        width: '100%',
+        minWidth: '600px'
+      }}      
+      >
           {chartData.datasets.length > 0 ? (
             <Bar options={options} data={chartData} plugins={[logoPlugin]} />
           ) : (
